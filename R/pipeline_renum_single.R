@@ -2,7 +2,7 @@
 ###############################FUNCTION#######################################################
 pipeline_renum_single <- function(datarenum,formula,fields_output,weights_object,residual_start,VCA_RRM,VCD_RRM,VCA,VCD,
                             ped_name,PED_DEPTH,genotype_file,missing_values,RRM_option,het_res_variance=NULL,
-                            fit_option,extra.option.blup){
+                            fit_option,extra.option.blup,blupf90_folder){
 
 ##################################
 
@@ -160,7 +160,7 @@ if(length(RRM_ped_terms)>0||length(RRM_diag_terms)>0){
   # set as working directory the new folder
   # if(ped_name!="pedBLUPF90.txt"){
   #   file.copy(list.files(getwd(), ped_name), paste0(getwd(),"/poly",RRM_option$poly))}
-  # 
+  #
   # setwd(paste0(getwd(),"/poly",RRM_option$poly))
 
   ######################################################################################################
@@ -213,7 +213,7 @@ if(length(RRM_ped_terms)>0||length(RRM_diag_terms)>0){
     diag(cov_rrm_diag) <- c(rep(VCD_RRM$VAR,length(poly_pos)))
   }else{
     cov_rrm_diag <- VCD_RRM
-    
+
   }
 }else{data_final=datarenum}
 
@@ -507,7 +507,7 @@ if(class(residual_start)[1]=="list"){
   diag(residual_VC) <- c(rep(residual_start$VAR,ncol(trait_terms)))
 }else{
   residual_VC <- residual_start
-  
+
 }
 
 
@@ -651,7 +651,7 @@ if(is.null(het_res_variance)==F){
   }
 #Including OPTION on renf90.par
 
-OPT_default <- list(yams=T,solution_mean=T,VCE=T,sol_se=T,Inbreeding=T,alpha_size=30,EM_REML=10,maxrounds=300,alpha_beta=c(0.95,0.05),tunedG=0,
+OPT_default <- list(yams=F,solution_mean=T,VCE=T,sol_se=T,Inbreeding=T,alpha_size=30,EM_REML=10,maxrounds=300,alpha_beta=c(0.95,0.05),tunedG=0,
   conv_crit=1e-10)
 
 opt_list <- c(OPT_default[names(OPT_default)[!(names(OPT_default) %in% names(fit_option))]],fit_option)
@@ -677,8 +677,8 @@ write(opt_blupf90, file = "renf90.par", append = T)
 write(extra.option.blup, file = "renf90.par", append = T)
 ######
 
-fread("renf90.fields",select = c("field","origfield"),data.table = F) %>% 
-  mutate(names=names(data_final)[.$origfield]) %>% 
+fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
+  mutate(names=names(data_final)[.$origfield]) %>%
   write.table(.,"cols_data_renumf90.txt",row.names = F,quote = T)
  }
 

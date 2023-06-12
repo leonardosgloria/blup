@@ -1,4 +1,5 @@
-pipeline_fit_model <- function(method="blupf90+",Gibbs_option=NULL,slurm_option=NULL,parameter_file="renf90.par",dense,n_threads=2){
+pipeline_fit_model <- function(method="blupf90+",Gibbs_option=NULL,slurm_option=NULL,
+                               parameter_file="renf90.par",dense,n_threads=2,blupf90_folder){
 if(dense==T){dense_blupf90=" --dense"}else{dense_blupf90=""}
   if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
     S_OP <- "Linux"
@@ -11,22 +12,22 @@ if(dense==T){dense_blupf90=" --dense"}else{dense_blupf90=""}
 
 
       if(S_OP=="Windows"){
-        aireml <- paste0(BLUPF90_folder,"/blupf90+.exe ", parameter_file, dense_blupf90)
+        aireml <- paste0(blupf90_folder,"/blupf90+.exe ", parameter_file, dense_blupf90)
       }else{
-        aireml <- paste0("export OMP_NUM_THREADS=",n_threads,"&&",BLUPF90_folder,"/blupf90+ ", parameter_file, dense_blupf90)
+        aireml <- paste0("export OMP_NUM_THREADS=",n_threads,"&&",blupf90_folder,"/blupf90+ ", parameter_file, dense_blupf90)
       }
       system(aireml)
     }
     if(method=="gibbsf90+"){
       if(S_OP=="Windows"){
-      gibbs <- paste0(BLUPF90_folder,
+      gibbs <- paste0(blupf90_folder,
                       paste("/gibbsf90+.exe ", parameter_file,
                             "--samples",Gibbs_option$samples,
                             "--burnin",Gibbs_option$burnin,
                             "--thin",Gibbs_option$thin)
                       )
       }else{
-        gibbs <- paste0(BLUPF90_folder,
+        gibbs <- paste0(blupf90_folder,
                         paste("/gibbsf90+ ", parameter_file,
                               "--samples",Gibbs_option$samples,
                               "--burnin",Gibbs_option$burnin,
@@ -67,7 +68,7 @@ if(dense==T){dense_blupf90=" --dense"}else{dense_blupf90=""}
     cat("#!/bin/sh -l","\n")
     cat("ulimit -s unlimited","\n")
     cat("echo ",parameter_file," |","\n")
-    cat(paste0(BLUPF90_folder,"/",slurm_options$programf90," "))
+    cat(paste0(blupf90_folder,"/",slurm_options$programf90," "))
     cat(gibbs_opt)
     sink()
 

@@ -1,7 +1,8 @@
 pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residual_start,VCA_RRM,VCD_RRM,VCA,VCD,
                            ped_name,PED_DEPTH=3,genotype_file,missing_values,RRM_option,het_res_variance=NULL,
-                           fit_option,extra.option.blup){
+                           fit_option,extra.option.blup,blupf90_folder){
   ##################################
+
 
   for (mod in 1:length(formula)){
 
@@ -201,7 +202,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
 
     unique_terms_eff <- function(eff,eff_n){
 
-      unique_terms <- eff%>% 
+      unique_terms <- eff%>%
         #dplyr::na_if(.,0) %>%
         apply(., 1, na.exclude) %>%
         lapply(., unique,sep=' ', na.rm=T) %>% unlist() %>% data.frame(terms_v=.)
@@ -250,7 +251,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     #####Function position#########################################
     unique_pos_eff <- function(eff,eff_n){
 
-      unique_pos <- eff%>% 
+      unique_pos <- eff%>%
         #dplyr::na_if(.,0) %>%
         apply(., 1, na.exclude) %>%
         lapply(., unique,sep=' ', na.rm=T) %>% unlist() %>% data.frame(terms_v=.)
@@ -312,7 +313,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     }
     ########Function get_terms ###################################
     get_terms <- function(eff){
-      fx <- eff %>% 
+      fx <- eff %>%
         #dplyr::na_if(.,0) %>%
         apply(., 1, na.exclude) %>% lapply(., unique,sep=' ', na.rm=T) %>%
         unlist() %>% data.frame(terms_v=.) %>% unique()
@@ -525,7 +526,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     # # set as working directory the new folder
     # if(ped_name!="pedBLUPF90.txt"){
     #   file.copy(list.files(getwd(), ped_name), paste0(getwd(),"/poly",RRM_option$poly))}
-    # 
+    #
     # setwd(paste0(getwd(),"/poly",RRM_option$poly))
 
     ######################################################################################################
@@ -554,13 +555,13 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     data_final <- dplyr::left_join(datarenum,fi1, by=RRM_option$Timevar,keep=F)
 
     colnames(data_final) <- c(colnames(datarenum),paste0("poly",c(0:RRM_option$poly)))
-    
+
     data_final_poly <-
       data_final %>% select(starts_with("poly")) %>% mutate_all(~replace_na(.,0))
     data_final_poly$poly0 <- 1
-    
+
     data_final[,c(seq(ncol(data_final)-RRM_option$poly,ncol(data_final)))] <- data_final_poly
-    
+
     fi1<- fi1[,-1]
 
     write.table(fi1,"fi.txt",col.names = F,row.names = F)
@@ -601,14 +602,14 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     }else{
       cov_add <-VCA
     }
-    
+
     ######PED CARD RENUM########################################
-    
-    
+
+
     pos_class_ped <- function(x){
       paste("EFFECT\n",toString(x),"\n",
             "RANDOM\n","animal\n","FILE\n",ped_name,"\n",
-            snp_gen,"\n",
+            snp_gen,
             "(CO)VARIANCES","\n",
             toString(cov_add),"\n") %>%
         gsub("\\,","",.)
@@ -868,7 +869,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
                         nrow = ncol(trait_pos_f))
     diag(residual_VC) <- c(rep(residual_start$VAR,ncol(trait_pos_f)))
   }else{
-    residual_VC <-residual_start  
+    residual_VC <-residual_start
   }
   ###################################################
   #fields_output_pos including  Heterogeneous variance
@@ -896,9 +897,9 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     stringr::str_detect(.,"h_var", negate = F) %>% which(T)
 
   het_eff_field <- which(colnames(data_final) == het_res_variance$het_levels)
-  
+
   fields_output <- which(names(datarenum)%in%fields_output)
-  
+
   fields_output_pos <-c(het_eff_field,fields_output,het_levels_field,subj_field) %>%
     unlist() %>% as.vector()
   #################
@@ -960,9 +961,9 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
       S_OP <- "Windows"
     }
   if(S_OP=="Windows"){
-    renum <- paste0(BLUPF90_folder,"/renumf90.exe renum.par")
+    renum <- paste0(blupf90_folder,"/renumf90.exe renum.par")
   }else{
-  renum <- paste0(BLUPF90_folder,"/renumf90 renum.par")
+  renum <- paste0(blupf90_folder,"/renumf90 renum.par")
   }
   system(renum) # you should check "renum.par" file in advance
 
@@ -1000,14 +1001,14 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
       write(h_pol, file = "renf90.par", append = T)
     }
   }
-  
+
 #Including OPTION on renf90.par
-  
-OPT_default <- list(yams=T,solution_mean=T,VCE=T,sol_se=T,Inbreeding=T,alpha_size=30,EM_REML=10,maxrounds=300,alpha_beta=c(0.95,0.05),tunedG=0,
+
+OPT_default <- list(yams=F,solution_mean=T,VCE=T,sol_se=T,Inbreeding=T,alpha_size=30,EM_REML=10,maxrounds=300,alpha_beta=c(0.95,0.05),tunedG=0,
                       conv_crit=1e-10)
 #OPTION conv_crit 1e-12
 opt_list <- c(OPT_default[names(OPT_default)[!(names(OPT_default) %in% names(fit_option))]],fit_option)
-  
+
 sm <- ifelse(opt_list$solution_mean==T,paste("OPTION solution mean","\n"),"")
 yams <- ifelse(opt_list$yams==T,paste("OPTION use_yams","\n"),"")
 VCE <- ifelse(opt_list$VCE==T,paste("OPTION method VCE","\n"),"")
@@ -1019,7 +1020,7 @@ max_r <- ifelse(opt_list$maxrounds>0,paste("OPTION maxrounds",opt_list$maxrounds
 alph_b <- ifelse(opt_list$alpha_beta>0,paste("OPTION AlphaBeta",opt_list$alpha_beta[1],opt_list$alpha_beta[2],"\n"),"")
 tuG <- ifelse(opt_list$tunedG!=0,paste("OPTION tunedG",opt_list$tunedG,"\n"),paste("OPTION tunedG",0,"\n"))
 conv_crit <- ifelse(opt_list$conv_crit!=1e-10,paste("OPTION conv_crit",opt_list$conv_crit,"\n"),paste("OPTION conv_crit",1e-10,"\n"))
-  
+
 oriID <- "OPTION origID"
 opt_blupf90 <- unique(paste0(sm,VCE,yams,sol_se,imb,alps,
                                EM_reml,max_r,alph_b,tuG,conv_crit,oriID))
@@ -1027,9 +1028,9 @@ write(opt_blupf90, file = "renf90.par", append = T)
 
 #Extra OPTION within paremeter file
 write(extra.option.blup, file = "renf90.par", append = T)
-###### 
-  fread("renf90.fields",select = c("field","origfield"),data.table = F) %>% 
-    mutate(names=names(data_final)[.$origfield]) %>% 
+######
+  fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
+    mutate(names=names(data_final)[.$origfield]) %>%
     write.table(.,"cols_data_renumf90.txt",row.names = F,quote = T)
 }
 #################

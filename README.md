@@ -25,6 +25,7 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(blup)
+#> [1] "download blupf90 software"
 ## basic example code
 ```
 
@@ -52,7 +53,7 @@ datarenum1$eff3 <- factor(datarenum1$eff3)
 datarenum1$eff4 <- factor(datarenum1$eff4)
 datarenum1$id <- factor(datarenum1$id)
 
-model <- list(trait1 ~ eff3 + eff4 + cov5 + ped|id,
+model1 <- list(trait1 ~ eff3 + eff4 + cov5 + ped|id,
               trait2~ eff3 + eff4 + cov5 + ped|id)
 
 VC_start1 <- list(COV=-0.25,
@@ -78,7 +79,9 @@ c(1,0,0
 ,14,9,13
 ,15,11,10),ncol = 3,byrow = T)
 
-write.table(pedigree_renumf90,"pedigreef90.txt")
+#write.table(pedigree_renumf90,"pedigreef90.txt")
+#result <- blup(datarenum=datarenum1,formula=model1,VCA=VC_start1,
+#               residual_start=residual_start1,ped_name="pedigreef90.txt",keep_files = F)
 ```
 
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`

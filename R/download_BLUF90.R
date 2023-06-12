@@ -67,7 +67,7 @@ download_BLUPF90 <- function(dest_folder=paste0(.libPaths()[1],"/blupf90")){
       download.file(paste0(url_blupf90,stw_BLUPF90),destfile)
     }
     if(S_OP!="Windows"){
-      Sys.chmod(paste0(getwd(),"/",stw_BLUPF90),  # Apply Sys.chmod function
+      Sys.chmod(paste0(dest_folder,"/",stw_BLUPF90),  # Apply Sys.chmod function
                 mode = "0777")}
   }
 

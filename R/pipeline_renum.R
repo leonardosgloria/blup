@@ -27,9 +27,10 @@
 #'
 #' @details
 #' The `blup` function performs Best Linear Unbiased Prediction (BLUP) analysis on the given dataset using the specified model formula.
-#' It estimates genetic parameters, such as additive genetic variance and non-genetic random effects, using the provided input parameters.
+#' It estimates additive genetic variance and non-genetic random effects, using the provided input parameters.
 #'  Various options are available to customize the analysis, including random regression option using Legendre polynomials,
-#'  residual heritability, pedigree information, genotype data, single-step GBLUP.
+#'  residual heritability, pedigree information, genotype data, single-step GBLUP. In addition, blup can do cross-validation using
+#'  Legarra & Reverter method.
 #'
 #' @examples
 #' \dontrun{
@@ -51,35 +52,44 @@
 #'
 #'   \item Lourenco, Daniela, Andres Legarra, Shogo Tsuruta, Yutaka Masuda, Ignacio Aguilar, and Ignacy Misztal. "Single-step genomic evaluations from theory to practice: using SNP chips and sequence data in BLUPF90." Genes 11, no. 7 (2020): 790.
 #'
+#'   \item Legarra, A., Reverter, A. Semi-parametric estimates of population accuracy and bias of predictions of breeding values and future phenotypes using the LR method. Genet Sel Evol 50, 53 (2018). https://doi.org/10.1186/s12711-018-0426-6
 #' }
 #'
 #'
 #'
 #' @export
 #'
-blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residual_start=1,VCA_RRM=NULL,VCD_RRM=NULL,VCA=0.1,VCD=0.1,
-                           ped_name,PED_DEPTH=3,genotype_file,missing_values=0,RRM_option,het_res_variance=NULL,
-                           fit_option,
+blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residual_start=NULL,VCA_RRM=NULL,VCD_RRM=NULL,VCA=NULL,VCD=NULL,
+                           ped_name=NULL,PED_DEPTH=3,genotype_file=NULL,missing_values=-99,RRM_option=NULL,het_res_variance=NULL,
+                           fit_option=list(),
                            run_model=list(method="blupf90+",dense=F,
                                           Gibbs_option= NULL,
                                           slurm_option=NULL,
                                           n_threads=1),
-                           cross_validation=list(group_name_cv,LOO_cv,prop,nrep,eff_name,RRM_option,
-                                                 keep_folder=F,parameter_file="renf90.par",logname = "blupf90.log"),
+                           cross_validation=NULL,
                            keep_files=T,
                            extra.option.blup=NULL
 ){
   "%ni%" <- Negate("%in%")
   #CHECK and download blupf90 family software
   #download_BLUPF90(dest_folder = paste0(.libPaths()[1],"/blupf90"))
+  #cross_validation=list(group_name_cv,LOO_cv,prop,nrep,eff_name,RRM_option,
+  #                      keep_folder=F,parameter_file="renf90.par")
+
   blupf90_folder <- paste0(.libPaths()[1],"/blupf90")
+  logname="blupf90.log"
+  if(is.null(VCA_RRM)==T){VCA_RRM<- list(COV=0.1,VAR=1)}
+  if(is.null(VCD_RRM)==T){VCD_RRM<- list(COV=0.1,VAR=1)}
+  if(is.null(VCA)==T){VCA<- list(COV=0.1,VAR=1)}
+  if(is.null(VCD)==T){VCD<- list(COV=0.1,VAR=1)}
+  if(is.null(residual_start)==T){residual_start<- list(COV=1,VAR=5)}
   ###########
   files_init <- list.files()
 
-  if(inherits(model, "formula")==TRUE){ #check if is single or multi trait
+  if(inherits(formula, "formula")==TRUE){ #check if is single or multi trait
     pipeline_renum <- pipeline_renum_single(datarenum,formula,fields_output,weights_object,residual_start,VCA_RRM,VCD_RRM,VCA,VCD,
                                             ped_name,PED_DEPTH,genotype_file,missing_values,RRM_option=RRM_option,
-                                            het_res_variance,fit_option,extra.option.blup) #call function for single trait
+                                            het_res_variance,fit_option,extra.option.blup,blupf90_folder) #call function for single trait
     #####Call function to fit the model
     if(is.null(run_model)==F){
 
@@ -93,7 +103,7 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
 
       pipeline_fit_model(method=run_model$method,Gibbs_option=run_model$Gibbs_option,dense=run_model$dense,
                          slurm_option=run_model$slurm_option,
-                         parameter_file="renf90.par",n_threads=run_model$n_threads)
+                         parameter_file="renf90.par",n_threads=run_model$n_threads,blupf90_folder)
 
     ############################
     #Call function to extract VC
@@ -101,7 +111,10 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
     out_variance_c <- pipeline_extract_vc(datarenum=datarenum,formula,logname="blupf90.log",parms_card="renf90.par",
                                           method=run_model$method,RRM_option=RRM_option)
 
-
+      if(is.null(RRM_option)==T){
+        out_variance_c$RRM_GENETIC <- NULL
+        out_variance_c$RRM_RANDOM <- NULL
+        }
     #    Creating renf90.par with using output
     fields_output <- c(fields_output, unique(c(cross_validation$group_name_cv,cross_validation$LOO_cv)))
 
@@ -113,7 +126,7 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
                           ped_name,
                           PED_DEPTH,genotype_file,missing_values,
                           RRM_option,het_res_variance,
-                          fit_option=list(VCE=F,maxrounds=1),extra.option.blup)
+                          fit_option=list(VCE=F,maxrounds=1),extra.option.blup,blupf90_folder)
     }
     ###################################
     #####CROSS VALIDATION
@@ -137,7 +150,7 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
                                  eff_name=cross_validation$eff_name,
                                  RRM_option=RRM_option,keep_folder=cross_validation$keep_folder,
                                  parameter_file=cross_validation$parameter_file,
-                                 logname = cross_validation$logname,genotype_file=genotype_file,
+                                 logname = "blupf90.log",genotype_file=genotype_file,
                                  n_threads=run_model$n_threads,
                                  method=run_model$method)
     }
@@ -186,14 +199,13 @@ summary_blup$polynomial <- data.table::fread("fi.txt")
 
 }
 ###################################################################
-#Check output files and delete what was not before the analysis
-files_end <- list.files()
-nonINIT_file <- files_end[files_end%ni%files_init]
-
-if(keep_files==F){
-  unlink(nonINIT_file, recursive = TRUE)
-}
-
+    #Check output files and delete what was not before the analysis
+    files_end <- list.files()
+    #nonINIT_file <- files_end[files_end%ni%files_init]
+    nonINIT_file <-setdiff(files_end,files_init)
+    if(keep_files==F){
+      unlink(nonINIT_file, recursive = F)
+    }
 return(summary_blup)
   }else{
     ###################################
@@ -201,7 +213,7 @@ return(summary_blup)
     ##################################
     pipeline_renum <- pipeline_renum_multi(datarenum,formula,fields_output=fields_output,weights_object,residual_start,VCA_RRM,VCD_RRM,VCA,VCD,
                                            ped_name,PED_DEPTH,genotype_file,missing_values,RRM_option,het_res_variance,
-                                           fit_option,extra.option.blup) #call function for multi trait
+                                           fit_option,extra.option.blup,blupf90_folder) #call function for multi trait
 
     #####Call function to fit the model
     if(is.null(run_model)==F){
@@ -215,13 +227,13 @@ return(summary_blup)
 
       pipeline_fit_model(method=run_model$method,Gibbs_option=run_model$Gibbs_option,dense=run_model$dense,
                          slurm_option=run_model$slurm_option,
-                         parameter_file="renf90.par",n_threads=run_model$n_threads)
+                         parameter_file="renf90.par",n_threads=run_model$n_threads,blupf90_folder)
 
 
     ############################
     #Call function to extract VC
     ############################
-    out_variance_c <- pipeline_extract_vc_multi(datarenum=datarenum,formula,logname="blupf90.log",parms_card="renf90.par",
+    out_variance_c <- pipeline_extract_vc_multi(datarenum=datarenum,formula,logname,parms_card="renf90.par",
                                                 method=run_model$method,RRM_option=RRM_option)
 
 
@@ -236,10 +248,10 @@ return(summary_blup)
                          ped_name,
                          PED_DEPTH,genotype_file,missing_values,
                          RRM_option,het_res_variance,
-                         fit_option=list(VCE=F,maxrounds=1),extra.option.blup)
+                         fit_option=list(VCE=F,maxrounds=1),extra.option.blup,blupf90_folder)
 
     output_multi<- list(formula,method=run_model$method)
-    output_multi$Var_Cor <- out_variance_c
+    output_multi$Var_Cov <- out_variance_c
     ###################################
     #####Genetic Correlation
     ##################################
@@ -274,7 +286,7 @@ return(summary_blup)
     #####Heritability
     ##################################
     if(is.null(RRM_option)==F){
-      h2multi <- h2_multi(datarenum=datarenum,formula=model,logname="blupf90.log",parms_card="renf90.par",
+      h2multi <- h2_multi(datarenum=datarenum,formula,logname="blupf90.log",parms_card="renf90.par",
              method="blupf90+",RRM_option=RRM_option)
       output_multi$h2_multi <- h2multi
 
@@ -297,16 +309,16 @@ return(summary_blup)
                                     parameter_file="renf90.par",logname = "blupf90.log",n_threads=run_model$n_threads,RRM_option=RRM_option)
 
       }
-     }
+    }
+    #Check output files and delete what was not before the analysis
+    files_end <- list.files()
+    #nonINIT_file <- files_end[files_end%ni%files_init]
+    nonINIT_file <-setdiff(files_end,files_init)
+    if(keep_files==F){
+      unlink(nonINIT_file, recursive = F)
+    }
     return(output_multi)
   }
 
-#Check output files and delete what was not before the analysis
-files_end <- list.files()
-nonINIT_file <- files_end[files_end%ni%files_init]
 
-
-if(keep_files==F){
-  unlink(nonINIT_file, recursive = TRUE)
-    }
 }

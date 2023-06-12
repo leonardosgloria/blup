@@ -104,5 +104,5 @@ blup(datarenum, formula, fields_output = c("field1", "field2"), weights_object =
 }
 }
 \author{
-Leonardo Siqueira Gloria
+Leonardo S. Gloria, Luiz F. Brito, Alencar Xavier, Keith A. Cherkauer, Victor B. Pedrosa, Katy Martin Rainey
 }
