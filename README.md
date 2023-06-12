@@ -21,7 +21,7 @@ devtools::install_github("leonardosgloria/blup")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a example from Matsuda using blupf90 software (https://masuday.github.io/blupf90_tutorial/renum_mt.html):
 
 ``` r
 library(blup)
@@ -29,11 +29,8 @@ library(blup)
 ## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
 ``` r
-###test Masuda multitrait analysis
+###Masuda multitrait analysis
 
 datarenum1 <- data.frame(matrix(
   c(3.0,4.5,1,1,1.0,6
