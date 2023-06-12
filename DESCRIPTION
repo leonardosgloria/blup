@@ -1,25 +1,14 @@
 Package: blup
 Type: Package
-Title: Run BLUPF90 using R
+Title: Best Linear Unbiased Predictions
 Version: 0.1.0
-Author: Purdue
-Maintainer: Leonardo Gloria <gloriasleonardo@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: MIT + file LICENSE
+Authors@R: c(person("Gloria", "Leonardo", role=c("aut", "cre"), email = "gloriasleonardo@gmail.com"), person("Xavier", "Alencar",  email = "alenxav@gmail.com", comment = c(ORCID = "0000-0001-5034-9954"), role=c("aut", "cre")), person("Brito", "Luis", role=c("aut")),person("Katy", "Rainey", role=c("aut")))
+Description: Calculation of Best Linear Unbiased Predictions (BLUP) with options for relationship structure and random regression.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
-Imports: 
-    data.table,
-    dplyr,
-    glue,
-    magrittr,
-    orthopolynom,
-    RCurl,
-    readr,
-    stringr,
-    tidyr
+Imports: data.table, dplyr, glue, magrittr, orthopolynom, RCurl, readr, stringr, tidyr
 Suggests: 
-    testthat (>= 3.0.0)
+    bWGR, testthat (>= 3.0.0)
 Config/testthat/edition: 3
