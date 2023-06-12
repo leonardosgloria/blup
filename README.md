@@ -21,7 +21,7 @@ devtools::install_github("leonardosgloria/blup")
 
 ## Example
 
-This is a example from Matsuda using blupf90 software (https://masuday.github.io/blupf90_tutorial/renum_mt.html):
+This is a example from Masuda using blupf90 software (https://masuday.github.io/blupf90_tutorial/renum_mt.html):
 
 ``` r
 library(blup)
