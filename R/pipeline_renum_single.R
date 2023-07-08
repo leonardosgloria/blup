@@ -608,9 +608,9 @@ if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
     S_OP <- "Windows"
   }
 if(S_OP=="Windows"){
-  renum <- paste0(BLUPF90_folder,"/renumf90.exe renum.par")
+  renum <- paste0(blupf90_folder,"/renumf90.exe renum.par")
 }else{
-  renum <- paste0(BLUPF90_folder,"/renumf90 renum.par")
+  renum <- paste0(blupf90_folder,"/renumf90 renum.par")
 }
 
 system(renum)
@@ -677,7 +677,7 @@ write(opt_blupf90, file = "renf90.par", append = T)
 write(extra.option.blup, file = "renf90.par", append = T)
 ######
 
-fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
+data.table::fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
   mutate(names=names(data_final)[.$origfield]) %>%
   write.table(.,"cols_data_renumf90.txt",row.names = F,quote = T)
  }

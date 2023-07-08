@@ -143,7 +143,7 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
                       cross_validation)
 
 
-      pipeline_cross_validation (datarenum=datarenum,formula=formula,
+      pipeline_cross_validation (datarenum,formula=formula,
                                  group_name_cv=cross_validation$group_name_cv,
                                  LOO_cv=cross_validation$LOO_cv,
                                  prop=cross_validation$prop,nrep=cross_validation$nrep,
@@ -152,7 +152,7 @@ blup <- function(datarenum,formula,fields_output=NULL,weights_object=NULL,residu
                                  parameter_file=cross_validation$parameter_file,
                                  logname = "blupf90.log",genotype_file=genotype_file,
                                  n_threads=run_model$n_threads,
-                                 method=run_model$method,blupf90_folder=blupf90_folder)
+                                 method=run_model$method,blupf90_folder)
     }
 
 ###################################
@@ -176,11 +176,14 @@ if(is.null(RRM_option)==F){
   names(summary_blup) <- c("formula","Method","Heritability","Variance components",
                            "Solutions","Validation","EBV_Total","EBV_time")
 
+if(is.null(summary_blup$`Variance components`$RRM_RANDOM)==F){
   summary_blup$`Variance components`$RRM_RANDOM <-
   matrix(summary_blup$`Variance components`$RRM_RANDOM,ncol=RRM_option$poly+1)
-
+}
+  if(is.null(summary_blup$`Variance components`$RRM_GENETI)==F){
 summary_blup$`Variance components`$RRM_GENETIC <-
   matrix(summary_blup$`Variance components`$RRM_GENETIC,ncol=RRM_option$poly+1)
+  }
 
 summary_blup$polynomial <- data.table::fread("fi.txt")
 }else{
@@ -197,14 +200,13 @@ summary_blup$polynomial <- data.table::fread("fi.txt")
   names(summary_blup) <- c("formula","Method","Variance components",
                            "Solutions","Validation")
 
-}
 ###################################################################
     #Check output files and delete what was not before the analysis
     files_end <- list.files()
     #nonINIT_file <- files_end[files_end%ni%files_init]
     nonINIT_file <-setdiff(files_end,files_init)
     if(keep_files==F){
-      unlink(nonINIT_file, recursive = F)
+      unlink(nonINIT_file, recursive = T)
     }
 return(summary_blup)
   }else{

@@ -1,5 +1,5 @@
 pipeline_fit_model <- function(method="blupf90+",Gibbs_option=NULL,slurm_option=NULL,
-                               parameter_file="renf90.par",dense,n_threads=2,blupf90_folder){
+                               parameter_file="renf90.par",dense,n_threads=2,blupf90_folder=blupf90_folder){
 if(dense==T){dense_blupf90=" --dense"}else{dense_blupf90=""}
   if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
     S_OP <- "Linux"
@@ -14,7 +14,7 @@ if(dense==T){dense_blupf90=" --dense"}else{dense_blupf90=""}
       if(S_OP=="Windows"){
         aireml <- paste0(blupf90_folder,"/blupf90+.exe ", parameter_file, dense_blupf90)
       }else{
-        aireml <- paste0("export OMP_NUM_THREADS=",n_threads,"&&",blupf90_folder,"/blupf90+ ", parameter_file, dense_blupf90)
+        aireml <- paste0("ulimit -s unlimited && export OMP_NUM_THREADS=",n_threads,"&&",blupf90_folder,"/blupf90+ ", parameter_file, dense_blupf90)
       }
       system(aireml)
     }
