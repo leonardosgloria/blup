@@ -557,7 +557,7 @@ pipeline_renum_multi <- function(datarenum,formula,fields_output=NULL,weights_ob
     colnames(data_final) <- c(colnames(datarenum),paste0("poly",c(0:RRM_option$poly)))
 
     data_final_poly <-
-      data_final %>% select(starts_with("poly")) %>% mutate_all(~replace_na(.,0))
+      data_final %>% select(starts_with("poly")) %>% dplyr::mutate_all(~replace_na(.,0))
     data_final_poly$poly0 <- 1
 
     data_final[,c(seq(ncol(data_final)-RRM_option$poly,ncol(data_final)))] <- data_final_poly
@@ -1029,7 +1029,7 @@ write(opt_blupf90, file = "renf90.par", append = T)
 #Extra OPTION within paremeter file
 write(extra.option.blup, file = "renf90.par", append = T)
 ######
-  fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
+  data.table::fread("renf90.fields",select = c("field","origfield"),data.table = F) %>%
     mutate(names=names(data_final)[.$origfield]) %>%
     write.table(.,"cols_data_renumf90.txt",row.names = F,quote = T)
 }

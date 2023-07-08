@@ -533,8 +533,16 @@ pipeline_extract_vc_multi <- function(datarenum,formula,logname="blupf90.log",pa
   ##############
   #OUTPUT
   ##############
-  VCA_out <- vc_matrix[ped_terms] %>% unlist() %>% matrix(ncol = number_traits,nrow = number_traits) %>% list(GENETIC=.)
-  VCD_out <- vc_matrix[diag_terms] %>% unlist()%>% list(RANDOM=.)
+  if(is.null(ped_terms)==F){
+    VCA_out <- vc_matrix[ped_terms] %>% unlist() %>%
+      matrix(ncol = number_traits,nrow = number_traits) %>% list(GENETIC=.)
+  }else{VCA_out <- vc_matrix[ped_terms] %>% unlist()%>% list(GENETIC=.)}
+
+  if(is.null(ped_terms)==F){
+  VCD_out <- vc_matrix[diag_terms] %>% unlist()%>%
+    matrix(ncol = number_traits,nrow = number_traits)%>% list(RANDOM=.)
+  }else{VCD_out <- vc_matrix[diag_terms] %>% unlist()%>% list(RANDOM=.)}
+
 
   residual_out <- res_out%>% unlist %>% list(RESIDUAL=.)
 

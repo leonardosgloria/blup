@@ -1,13 +1,13 @@
 h2_multi <- function(datarenum,formula,logname,parms_card,
                      method,RRM_option){
-  
-fi = as.matrix(read.table("fi.txt", header = F))              # desired matrix, Legendre pol for x (dim) variable 
+
+fi = as.matrix(read.table("fi.txt", header = F))              # desired matrix, Legendre pol for x (dim) variable
 DAP <- seq(RRM_option$Pmin,RRM_option$Pmax,by=1)
 ###############################
 number_traits <- readLines(parms_card) %>%
-    .[grep("NUMBER_OF_TRAITS", .)+1] %>% 
+    .[grep("NUMBER_OF_TRAITS", .)+1] %>%
     as.numeric()
-  
+
   pos_random <- readLines(parms_card) %>%grep(" RANDOM_GROUP", .)+1
 
   VC_ <- list()
@@ -43,12 +43,12 @@ number_traits <- readLines(parms_card) %>%
 #Additive RR
 ############
 #add = as.matrix(read.table("RRM_GENETIC", header = F))   # varcomp matrix coeff additive genetic
-add <- 
-  pipeline_extract_vc_multi(datarenum=datarenum,formula=formula,
-                            logname=logname,parms_card=parms_card,method=method,RRM_option=RRM_option) %>% 
+add <-
+  pipeline_extract_vc_multi(datarenum=datarenum,formula,
+                            logname=logname,parms_card=parms_card,method,RRM_option=RRM_option) %>%
   .$RRM_GENETIC
 
-  
+
   for (i in 1:number_traits) {
     trait_vc <- add[,seq(i,ncol(add),by=2)]
     ifelse(i==1,vc_order_col <- trait_vc,vc_order_col <- cbind(vc_order_col,trait_vc))
@@ -58,28 +58,29 @@ add <-
     trait_vc <- vc_order_col[,seq(i,ncol(vc_order_col),by=2)]
     ifelse(i==1,vc_order_row <- trait_vc,vc_order_row <- cbind(vc_order_row,trait_vc))
   }
-  
+
   vc_order_row <- t(vc_order_row)
-  
-  
-  
+
+
+
   for (add_vc_t in 1:number_traits) {
     block_max <- add_vc_t*length(VC_[[vc]])
     block_min <- add_vc_t*length(VC_[[vc]])-length(VC_[[vc]])+1
     add_vc_trait <- vc_order_row[block_min:block_max,block_min:block_max]
     ifelse(add_vc_t==1,vc_trait <- list(add_vc_trait),vc_trait[add_vc_t] <- list(add_vc_trait))
   }
-  
+
 ###############
 #nonAdditive RR
-############### 
+###############
 #nadd = as.matrix(read.table("RRM_RANDOM", header = F))   # varcomp matrix coeff additive genetic
-nadd <- 
+nadd <-
     pipeline_extract_vc_multi(datarenum=datarenum,formula=formula,
-                              logname=logname,parms_card=parms_card,method=method,RRM_option=RRM_option) %>% 
+                              logname=logname,parms_card=parms_card,method=method,RRM_option=RRM_option) %>%
     .$RRM_RANDOM
-  
-if(is.null(nadd)==F){ 
+
+  naddvc_trait <- NULL
+if(is.null(nadd)==F){
   for (i in 1:number_traits) {
     trait_vc <- nadd[,seq(i,ncol(nadd),by=2)]
     ifelse(i==1,vc_order_col <- trait_vc,vc_order_col <- cbind(vc_order_col,trait_vc))
@@ -89,9 +90,9 @@ if(is.null(nadd)==F){
     trait_vc <- vc_order_col[,seq(i,ncol(vc_order_col),by=2)]
     ifelse(i==1,vc_order_row <- trait_vc,vc_order_row <- cbind(vc_order_row,trait_vc))
   }
-  
+
   vc_order_row <- t(vc_order_row)
-  
+
   for (nadd_vc_t in 1:number_traits) {
     block_max <- nadd_vc_t*length(VC_[[vc]])
     block_min <- nadd_vc_t*length(VC_[[vc]])-length(VC_[[vc]])+1
@@ -99,39 +100,39 @@ if(is.null(nadd)==F){
     ifelse(nadd_vc_t==1,naddvc_trait <- list(nadd_vc_trait),naddvc_trait[nadd_vc_t] <- list(nadd_vc_trait))
   }
 }
-#############################################  
-  gp <- 
+#############################################
+  gp <-
     pipeline_extract_vc_multi(datarenum=datarenum,formula=formula,
                               logname=logname,parms_card=parms_card,method=method,RRM_option=RRM_option)
-  
+
   gp$RRM_GENETIC <- NULL
   gp$RRM_RANDOM <- NULL
-  
-  gp$RESIDUAL %>% diag() %>% data.frame(trait=seq(1,length(.)),residual=.) %>% split(.$trait) %>% 
-    .[[1]] %>% 
-    select(residual) %>% c(.,rep(0,ncol(vc_trait[[1]])*ncol(vc_trait[[1]])-1)) %>% 
+
+  gp$RESIDUAL %>% diag() %>% data.frame(trait=seq(1,length(.)),residual=.) %>% split(.$trait) %>%
+    .[[1]] %>%
+    select(residual) %>% c(.,rep(0,ncol(vc_trait[[1]])*ncol(vc_trait[[1]])-1)) %>%
     unlist() %>% matrix(.,ncol=ncol(vc_trait[[1]]))
-  
+
   gpl <- list()
   gptrait <- list()
   i=1
   ngpl <- NULL
-  
+
   for (gpti in 1:number_traits) {
     i=1
     for (gpi in 1:length(gp)) {
-      
+
       if(length(gp[[gpi]]) == 0) {
         gpl[[gpi]]=NULL
         i=i
       }else{
         gpl[[i]]=
-          gp[[gpi]] %>% diag() %>% data.frame(trait=seq(1,length(.)),residual=.) %>% split(.$trait) %>% 
-          .[[gpti]] %>% 
-          select(residual) %>% c(.,rep(0,ncol(vc_trait[[1]])*ncol(vc_trait[[1]])-1)) %>% 
+          gp[[gpi]] %>% diag() %>% data.frame(trait=seq(1,length(.)),residual=.) %>% split(.$trait) %>%
+          .[[gpti]] %>%
+          select(residual) %>% c(.,rep(0,ncol(vc_trait[[1]])*ncol(vc_trait[[1]])-1)) %>%
           unlist() %>% matrix(.,ncol=ncol(vc_trait[[1]]))
-        
-        
+
+
         ngpl[i] <- names(gp)[gpi]
         i=i+1
       }
@@ -139,7 +140,7 @@ if(is.null(nadd)==F){
     gptrait[[gpti]] <-gpl
     names(gptrait[[gpti]]) <- ngpl
   }
-  
+
   gpc <- NULL
   vct <- list()
   for (gpti in 1:number_traits){
@@ -147,27 +148,31 @@ if(is.null(nadd)==F){
     for (gpi in 1:length(ngpl)){
       gpc1 <- diag(fi%*%gptrait[[gpti]][[gpi]]%*%t(fi))
       gpc <- cbind(gpc,gpc1)
-      
+
     }
     colnames(gpc) <- ngpl
-    gRRM <- fi%*%as.matrix(vc_trait[[gpti]])%*%t(fi) %>% 
+    gRRM <- fi%*%as.matrix(vc_trait[[gpti]])%*%t(fi) %>%
       diag()
-    
-    dRRM <- fi%*%as.matrix(naddvc_trait[[gpti]])%*%t(fi) %>% 
+
+    dRRM <-NULL
+
+    if(is.null(naddvc_trait)==F){
+    dRRM <- fi%*%as.matrix(naddvc_trait[[gpti]])%*%t(fi) %>%
       diag()
-    
+    }
     # do the same with random RR
-    vct[[gpti]] <- data.frame(gpc,gRRM,dRRM)
+    vct[[gpti]] <- cbind(gpc,gRRM,dRRM) %>% data.frame()
+
     vct[[gpti]] <- vct[[gpti]] %>% mutate(h2=gRRM/apply(., 1, sum),DAP)
   }
 #get trait names
 trait_terms <- NULL
   for (mod in 1:length(formula)){
     form <- formula[[mod]]
-    
+
     ter = terms(form)
     labs = labels(ter)
-    
+
     trait_terms[mod] <-
       ter %>% .[[2]] %>% as.character() %>%
       gsub( "\\|", NA,.) %>% na.exclude() %>%
