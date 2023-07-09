@@ -208,7 +208,9 @@ summary_blup$polynomial <- data.table::fread("fi.txt")
     if(keep_files==F){
       unlink(nonINIT_file, recursive = T)
     }
+}
 return(summary_blup)
+
   }else{
     ###################################
     #####MULTI-TRAIT MODEL
@@ -331,11 +333,8 @@ return(summary_blup)
       unlink(nonINIT_file, recursive = T)
 
     }
-
-
-
     return(output_multi)
   }
-
-
 }
+
+
