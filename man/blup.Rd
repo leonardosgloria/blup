@@ -9,23 +9,22 @@ blup(
   formula,
   fields_output = NULL,
   weights_object = NULL,
-  residual_start = 1,
+  residual_start = NULL,
   VCA_RRM = NULL,
   VCD_RRM = NULL,
-  VCA = 0.1,
-  VCD = 0.1,
-  ped_name,
+  VCA = NULL,
+  VCD = NULL,
+  ped_name = NULL,
   PED_DEPTH = 3,
-  genotype_file,
-  missing_values = 0,
-  RRM_option,
+  genotype_file = NULL,
+  missing_values = -99,
+  RRM_option = NULL,
   het_res_variance = NULL,
-  fit_option,
+  fit_option = list(),
   run_model = list(method = "blupf90+", dense = F, Gibbs_option = NULL, slurm_option =
     NULL, n_threads = 1),
-  cross_validation = list(group_name_cv, LOO_cv, prop, nrep, eff_name, RRM_option,
-    keep_folder = F, parameter_file = "renf90.par", logname = "blupf90.log"),
-  keep_files = T,
+  cross_validation = NULL,
+  keep_files = F,
   extra.option.blup = NULL
 )
 }
@@ -76,9 +75,10 @@ BLUPF90 software
 }
 \details{
 The `blup` function performs Best Linear Unbiased Prediction (BLUP) analysis on the given dataset using the specified model formula.
-It estimates genetic parameters, such as additive genetic variance and non-genetic random effects, using the provided input parameters.
+It estimates additive genetic variance and non-genetic random effects, using the provided input parameters.
  Various options are available to customize the analysis, including random regression option using Legendre polynomials,
- residual heritability, pedigree information, genotype data, single-step GBLUP.
+ residual heritability, pedigree information, genotype data, single-step GBLUP. In addition, blup can do cross-validation using
+ Legarra & Reverter method.
 }
 \examples{
 \dontrun{
@@ -101,6 +101,7 @@ blup(datarenum, formula, fields_output = c("field1", "field2"), weights_object =
 
   \item Lourenco, Daniela, Andres Legarra, Shogo Tsuruta, Yutaka Masuda, Ignacio Aguilar, and Ignacy Misztal. "Single-step genomic evaluations from theory to practice: using SNP chips and sequence data in BLUPF90." Genes 11, no. 7 (2020): 790.
 
+  \item Legarra, A., Reverter, A. Semi-parametric estimates of population accuracy and bias of predictions of breeding values and future phenotypes using the LR method. Genet Sel Evol 50, 53 (2018). https://doi.org/10.1186/s12711-018-0426-6
 }
 }
 \author{

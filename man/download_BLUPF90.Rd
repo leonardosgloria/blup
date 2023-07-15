@@ -4,10 +4,12 @@
 \alias{download_BLUPF90}
 \title{download_BLUPF90}
 \usage{
-download_BLUPF90(dest_folder = paste0(.libPaths()[1], "/blupf90"))
+download_BLUPF90(dest_folder = NULL, update = F)
 }
 \arguments{
 \item{dest_folder}{(optional) A character string specifying the destination folder where the BLUPF90 files will be saved.}
+
+\item{update}{(optional): Specifies whether to update the existing BLUPF90 software files if they already exist in the destination folder. If set to TRUE, the function will download and replace any existing files. If set to FALSE, the function will skip the download if the files already exist. The default value is FALSE.}
 }
 \value{
 Details:
@@ -15,8 +17,15 @@ The \code{download_BLUPF90} function downloads BLUPF90 software files from the a
 }
 \description{
 Description:
-Download all BLUPF90 software from their official repository (http://nce.ads.uga.edu/html/projects/programs/),
-and saves them to the destination folder.
+This function downloads all the BLUPF90 software files from their official repository
+(http://nce.ads.uga.edu/html/projects/programs/) and saves them to the specified
+destination folder. The BLUPF90 software is used for statistical analysis
+and genetic evaluation of animal and plant breeding data.
+By default, the function will save the software files in the R user folder,
+but you can provide a different destination folder using the dest_folder parameter.
+If the update parameter is set to TRUE, the function will replace any existing
+files in the destination folder with the latest versions from the repository.
+If update is set to FALSE, the function will skip the download for files that already exist in the destination folder.
 }
 \details{
 Usage:
@@ -36,6 +45,7 @@ download_BLUPF90(dest_folder = "~/blupf90_files")
 Note:
 The \code{download_BLUPF90} function requires the \code{RCurl} package to be installed.
 
-Please ensure that you have proper permissions to access the destination folder and that you have an active internet connection during the execution of this function.
+Please ensure that you have proper permissions to access the destination folder and
+that you have an active internet connection during the execution of this function.
 
 }
