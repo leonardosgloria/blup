@@ -121,4 +121,3 @@ download_BLUPF90 <- function(dest_folder = NULL, update = FALSE) {
   
   invisible(out_paths)
 }
-
