@@ -24,7 +24,7 @@
 #' Details:
 #' The \code{download_BLUPF90} function downloads BLUPF90 software files from the appropriate URL based on the operating system. The function identifies the operating system (Linux, Mac_OSX, or Windows) and constructs the URL accordingly. It retrieves the list of available BLUPF90 files from the URL and compares them to the files in the local destination folder. It then downloads the missing files from the URL to the specified destination folder.
 #'
-#' @import RCurl
+#' @import RCurl httr
 #'
 #' @examples
 #' \code{
@@ -78,7 +78,7 @@ download_BLUPF90 <- function(dest_folder=NULL,update=F){
       download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb",ssl_verifypeer = FALSE)
     }else{
       # Download using httr and bypass SSL check
-      res <- httr::GET(paste0(url_blupf90,stw_BLUPF90), httr::config(ssl_verifypeer = FALSE))
+      res <- GET(paste0(url_blupf90,stw_BLUPF90), config(ssl_verifypeer = FALSE))
       
       # Write to disk
       writeBin(content(res, "raw"), destfile)
