@@ -42,7 +42,7 @@
 #' that you have an active internet connection during the execution of this function.
 #'
 download_BLUPF90 <- function(dest_folder=NULL,update=F){
-  #download_BLUPF90(dest_folder = paste0(.libPaths()[1],"/blupf90"))
+ 
   if(is.null(dest_folder)==T){
     dest_folder=paste0(.libPaths()[1],"/blupf90")
   }
@@ -64,8 +64,7 @@ download_BLUPF90 <- function(dest_folder=NULL,update=F){
   }
   
   d_f <- function(stw_BLUPF90,dest_folder=dest_folder){
-    # Specify destination where file should be saved
-    
+       
     if(is.null(dest_folder)==T){
       destfile <- paste0(getwd(),"/",stw_BLUPF90)
       dest_folder <- getwd()
@@ -73,13 +72,13 @@ download_BLUPF90 <- function(dest_folder=NULL,update=F){
       destfile <- paste0(dest_folder,"/",stw_BLUPF90)
     }
     dir.create(dirname(dest_folder), recursive = TRUE, showWarnings = FALSE)
-    #dir.create(paste0(.libPaths()[1]),"/blupf90")
+    
     # Apply download.file function in R
     if(S_OP=="Windows"){
       download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb",ssl_verifypeer = FALSE)
     }else{
       # Download using httr and bypass SSL check
-      res <- httr::GET(url, config(ssl_verifypeer = FALSE))
+      res <- httr::GET(paste0(url_blupf90,stw_BLUPF90), config(ssl_verifypeer = FALSE))
       
       # Write to disk
       writeBin(content(res, "raw"), destfile)
@@ -99,6 +98,7 @@ download_BLUPF90 <- function(dest_folder=NULL,update=F){
   diff_stw <- data.frame(stw=setdiff(list_blupf90$stw,stw_local$stw))
   if(nrow(diff_stw)==0 & update==F){print("You have downloaded all BLUPF90 softwares")
   }else{
-    apply(list_blupf90, 1, d_f,dest_folder=dest_folder)}
+    apply(list_blupf90, 1, d_f,dest_folder=dest_folder)
+    }
 }
 
