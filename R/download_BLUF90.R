@@ -21,6 +21,7 @@
 #' @param update (optional): Specifies whether to update the existing BLUPF90 software files if they already exist in the destination folder. If set to TRUE, the function will download and replace any existing files. If set to FALSE, the function will skip the download if the files already exist. The default value is FALSE.
 #'
 #' @return
+#' @export
 #' Details:
 #' The \code{download_BLUPF90} function downloads BLUPF90 software files from the appropriate URL based on the operating system. The function identifies the operating system (Linux, Mac_OSX, or Windows) and constructs the URL accordingly. It retrieves the list of available BLUPF90 files from the URL and compares them to the files in the local destination folder. It then downloads the missing files from the URL to the specified destination folder.
 #'
