@@ -43,18 +43,18 @@
 #'
 download_BLUPF90 <- function(dest_folder=NULL,update=F){
   #download_BLUPF90(dest_folder = paste0(.libPaths()[1],"/blupf90"))
-if(is.null(dest_folder)==T){
-  dest_folder=paste0(.libPaths()[1],"/blupf90")
-}
+  if(is.null(dest_folder)==T){
+    dest_folder=paste0(.libPaths()[1],"/blupf90")
+  }
   if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
     S_OP <- "Linux"
   } else if(gsub("([0-9]|\\.)","",version$os)=="darwin"){
     S_OP <- "Mac_OSX"}else{
       S_OP <- "Windows"
     }
-
-  url_blupf90 <- paste0("http://nce.ads.uga.edu/html/projects/programs/",S_OP,"/64bit/")
-  alltext <- RCurl::getURL(url_blupf90)
+  
+  url_blupf90 <- paste0("https://nce.ads.uga.edu/html/projects/programs/",S_OP,"/64bit/")
+  alltext <- RCurl::getURL(url_blupf90,ssl.verifypeer = FALSE)
   pattern <- "([A-z]+)(f90|f90[+])"
   m <- base::gregexec(pattern, alltext)
   list_blupf90 <- base::regmatches(alltext, m)[[1]][1,]|>unique()|>data.frame()
@@ -62,41 +62,43 @@ if(is.null(dest_folder)==T){
   if(S_OP=="Windows"){
     list_blupf90$stw <- paste0(list_blupf90$stw,".exe")
   }
-
+  
   d_f <- function(stw_BLUPF90,dest_folder=dest_folder){
     # Specify destination where file should be saved
+    
     if(is.null(dest_folder)==T){
       destfile <- paste0(getwd(),"/",stw_BLUPF90)
       dest_folder <- getwd()
     }else{
       destfile <- paste0(dest_folder,"/",stw_BLUPF90)
     }
-    dir.create(dest_folder)
+    dir.create(dirname(dest_folder), recursive = TRUE, showWarnings = FALSE)
     #dir.create(paste0(.libPaths()[1]),"/blupf90")
     # Apply download.file function in R
     if(S_OP=="Windows"){
-      download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb")
+      download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb",ssl_verifypeer = FALSE)
     }else{
-      download.file(paste0(url_blupf90,stw_BLUPF90),destfile)
+      # Download using httr and bypass SSL check
+      res <- httr::GET(url, config(ssl_verifypeer = FALSE))
+      
+      # Write to disk
+      writeBin(content(res, "raw"), destfile)
     }
     if(S_OP!="Windows"){
       Sys.chmod(paste0(dest_folder,"/",stw_BLUPF90),  # Apply Sys.chmod function
-                mode = "0777")}
+                mode = "0755")}
   }
-
+  
   stw_local <- data.frame(stw=list.files(getwd()))
   if(is.null(dest_folder)==T){
     stw_local <- data.frame(stw=list.files(getwd()))
   }else{
     stw_local <- data.frame(stw=list.files(dest_folder))
   }
-
+  
   diff_stw <- data.frame(stw=setdiff(list_blupf90$stw,stw_local$stw))
   if(nrow(diff_stw)==0 & update==F){print("You have downloaded all BLUPF90 softwares")
   }else{
     apply(list_blupf90, 1, d_f,dest_folder=dest_folder)}
 }
-
-
-
 
