@@ -11,10 +11,6 @@ download_BLUPF90(dest_folder = NULL, update = F)
 
 \item{update}{(optional): Specifies whether to update the existing BLUPF90 software files if they already exist in the destination folder. If set to TRUE, the function will download and replace any existing files. If set to FALSE, the function will skip the download if the files already exist. The default value is FALSE.}
 }
-\value{
-Details:
-The \code{download_BLUPF90} function downloads BLUPF90 software files from the appropriate URL based on the operating system. The function identifies the operating system (Linux, Mac_OSX, or Windows) and constructs the URL accordingly. It retrieves the list of available BLUPF90 files from the URL and compares them to the files in the local destination folder. It then downloads the missing files from the URL to the specified destination folder.
-}
 \description{
 Description:
 This function downloads all the BLUPF90 software files from their official repository
@@ -32,6 +28,9 @@ Usage:
 \code{download_BLUPF90(dest_folder = NULL)}
 
 Arguments:
+
+
+The \code{download_BLUPF90} function downloads BLUPF90 software files from the appropriate URL based on the operating system. The function identifies the operating system (Linux, Mac_OSX, or Windows) and constructs the URL accordingly. It retrieves the list of available BLUPF90 files from the URL and compares them to the files in the local destination folder. It then downloads the missing files from the URL to the specified destination folder.
 }
 \examples{
 \code{
@@ -43,7 +42,7 @@ download_BLUPF90(dest_folder = "~/blupf90_files")
 }
 
 Note:
-The \code{download_BLUPF90} function requires the \code{RCurl} package to be installed.
+The function requires RCurl and httr package to be installed.
 
 Please ensure that you have proper permissions to access the destination folder and
 that you have an active internet connection during the execution of this function.
