@@ -3,6 +3,4 @@
 export("%>%")
 export(blup)
 export(download_BLUPF90)
-import(RCurl)
-import(httr)
 importFrom(magrittr,"%>%")

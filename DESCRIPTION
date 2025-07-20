@@ -8,6 +8,6 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
-Imports: data.table, dplyr, glue, magrittr, orthopolynom, RCurl, readr, stringr, tidyr, httr
+Imports: data.table, dplyr, glue, magrittr, orthopolynom, readr, stringr, tidyr
 Suggests: bWGR, testthat (>= 3.0.0)
 Config/testthat/edition: 3
