@@ -78,7 +78,7 @@ download_BLUPF90 <- function(dest_folder=NULL,update=F){
       download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb",ssl_verifypeer = FALSE)
     }else{
       # Download using httr and bypass SSL check
-      res <- httr::GET(paste0(url_blupf90,stw_BLUPF90), httr::config(ssl_verifypeer = FALSE))
+      res <- httr::GET(paste0(url_blupf90,stw_BLUPF90))
       
       # Write to disk
       writeBin(content(res, "raw"), destfile)
