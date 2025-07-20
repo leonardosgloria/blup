@@ -25,7 +25,6 @@
 #' @details
 #' The \code{download_BLUPF90} function downloads BLUPF90 software files from the appropriate URL based on the operating system. The function identifies the operating system (Linux, Mac_OSX, or Windows) and constructs the URL accordingly. It retrieves the list of available BLUPF90 files from the URL and compares them to the files in the local destination folder. It then downloads the missing files from the URL to the specified destination folder.
 #'
-#' @import RCurl httr
 #'
 #' @examples
 #' \code{
