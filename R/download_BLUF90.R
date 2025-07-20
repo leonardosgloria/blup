@@ -42,64 +42,83 @@
 #' Please ensure that you have proper permissions to access the destination folder and
 #' that you have an active internet connection during the execution of this function.
 #'
-download_BLUPF90 <- function(dest_folder=NULL,update=F){
- 
-  if(is.null(dest_folder)==T){
-    dest_folder=paste0(.libPaths()[1],"/blup")
+download_BLUPF90 <- function(dest_folder = NULL, update = FALSE) {
+  ## 1. Prepare dest_folder
+  if (is.null(dest_folder)) {
+    dest_folder <- file.path(.libPaths()[1], "blupf90")
   }
-  if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
-    S_OP <- "Linux"
-  } else if(gsub("([0-9]|\\.)","",version$os)=="darwin"){
-    S_OP <- "Mac_OSX"}else{
-      S_OP <- "Windows"
-    }
-  
-  url_blupf90 <- paste0("https://nce.ads.uga.edu/html/projects/programs/",S_OP,"/64bit/")
-  alltext <- RCurl::getURL(url_blupf90,ssl.verifypeer = FALSE)
-  pattern <- "([A-z]+)(f90|f90[+])"
-  m <- base::gregexec(pattern, alltext)
-  list_blupf90 <- base::regmatches(alltext, m)[[1]][1,]|>unique()|>data.frame()
-  colnames(list_blupf90) <- c("stw")
-  if(S_OP=="Windows"){
-    list_blupf90$stw <- paste0(list_blupf90$stw,".exe")
+  if (!dir.exists(dest_folder)) {
+    dir.create(dest_folder, recursive = TRUE, showWarnings = FALSE)
   }
   
-  d_f <- function(stw_BLUPF90,dest_folder=dest_folder){
-       
-    if(is.null(dest_folder)==T){
-      destfile <- paste0(getwd(),"/",stw_BLUPF90)
-      dest_folder <- getwd()
-    }else{
-      destfile <- paste0(dest_folder,"/",stw_BLUPF90)
+  ## 2. Detect OS
+  sys  <- Sys.info()[["sysname"]]
+  os   <- switch(sys,
+                 Linux   = "Linux",
+                 Darwin  = "Mac_OSX",
+                 Windows = "Windows",
+                 stop("Unsupported platform: ", sys)
+  )
+  
+  ## 3. Helpers
+  has_cmd <- function(x) nzchar(Sys.which(x))
+  base_url <- paste0(
+    "https://nce.ads.uga.edu/html/projects/programs/",
+    os, "/64bit/"
+  )
+  
+  ## 4. Fetch HTML listing (skip SSL checks)
+  tmp <- tempfile(fileext = ".html")
+  on.exit(unlink(tmp), add = TRUE)
+  
+  fetch_args <- function(url, out) {
+    if (os == "Windows" && !has_cmd("curl")) {
+      # PowerShell fallback
+      cmd <- sprintf(
+        "Invoke-WebRequest -Uri %s -OutFile %s -UseBasicParsing -SkipCertificateCheck",
+        shQuote(url), shQuote(out)
+      )
+      system2("powershell", c("-Command", cmd))
+    } else if (has_cmd("curl")) {
+      system2("curl", c("-k", "-fsSL", url, "-o", shQuote(out)))
+    } else if (os != "Windows" && has_cmd("wget")) {
+      system2("wget", c("--no-check-certificate", "-qO", shQuote(out), url))
+    } else {
+      stop("Need 'curl' or 'wget' (or on Windows, PowerShell).")
     }
-    dir.create(dirname(dest_folder), recursive = TRUE, showWarnings = FALSE)
+  }
+  
+  fetch_args(base_url, tmp)
+  html <- readLines(tmp, warn = FALSE)
+  
+  ## 5. Extract all f90-related filenames
+  if (os == "Windows") {
+    lines <- grep('href="[^"]+\\.exe"', html, value = TRUE)
+    files <- unique(gsub('.*href="([^"]+\\.exe)".*', "\\1", lines))
+  } else {
+    lines <- grep('href="[^"]*f90[^"]*"', html, value = TRUE)
+    files <- unique(gsub('.*href="([^"]+)".*', "\\1", lines))
+    # drop parent-directory, any trailing slash
+    files <- files[!files %in% c("../", "") & grepl("f90", files)]
+  }
+  
+  if (!length(files)) {
+    stop("No BLUPF90 files found at ", base_url)
+  }
+  
+  ## 6. Download each one
+  out_paths <- character()
+  for (fname in files) {
+    url  <- paste0(base_url, fname)
+    dest <- file.path(dest_folder, fname)
+    if (file.exists(dest) && !update) next
     
-    # Apply download.file function in R
-    if(S_OP=="Windows"){
-      download.file(paste0(url_blupf90,stw_BLUPF90),destfile,mode="wb",ssl_verifypeer = FALSE)
-    }else{
-      # Download using httr and bypass SSL check
-      res <- httr::GET(paste0(url_blupf90,stw_BLUPF90), httr::config(ssl_verifypeer = FALSE))
-      
-      # Write to disk
-      writeBin(httr::content(res, "raw"), destfile)
-    }
-    if(S_OP!="Windows"){
-      Sys.chmod(paste0(dest_folder,"/",stw_BLUPF90),  # Apply Sys.chmod function
-                mode = "0755")}
+    message("Downloading ", fname)
+    fetch_args(url, dest)
+    if (os != "Windows") Sys.chmod(dest, "0755")
+    out_paths <- c(out_paths, dest)
   }
   
-  stw_local <- data.frame(stw=list.files(getwd()))
-  if(is.null(dest_folder)==T){
-    stw_local <- data.frame(stw=list.files(getwd()))
-  }else{
-    stw_local <- data.frame(stw=list.files(dest_folder))
-  }
-  
-  diff_stw <- data.frame(stw=setdiff(list_blupf90$stw,stw_local$stw))
-  if(nrow(diff_stw)==0 & update==F){print("You have downloaded all BLUPF90 softwares")
-  }else{
-    apply(list_blupf90, 1, d_f,dest_folder=dest_folder)
-    }
+  invisible(out_paths)
 }
 
