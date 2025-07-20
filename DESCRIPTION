@@ -2,7 +2,7 @@ Package: blup
 Type: Package
 Title: Best Linear Unbiased Predictions
 Version: 0.1.0
-Authors@R: c(person("Gloria", "Leonardo", role=c("aut", "cre"), email = "gloriasleonardo@gmail.com"), person("Xavier", "Alencar",  email = "alenxav@gmail.com", comment = c(ORCID = "0000-0001-5034-9954"), role=c("aut", "cre")), person("Brito", "Luis", role=c("aut")),person("Katy", "Rainey", role=c("aut")))
+Authors@R: c(person("Gloria", "Leonardo", role=c("aut", "cre"), email = "gloriasleonardo@gmail.com"), person("Xavier", "Alencar",  email = "alenxav@gmail.com", comment = c(ORCID = "0000-0001-5034-9954"), role=c("aut")), person("Brito", "Luis", role=c("aut")),person("Katy", "Rainey", role=c("aut")))
 Description: Calculation of Best Linear Unbiased Predictions (BLUP) with options for relationship structure and random regression.
 License: GPL-3
 Encoding: UTF-8
