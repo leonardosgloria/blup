@@ -45,7 +45,7 @@
 download_BLUPF90 <- function(dest_folder=NULL,update=F){
  
   if(is.null(dest_folder)==T){
-    dest_folder=paste0(.libPaths()[1],"/blupf90")
+    dest_folder=paste0(.libPaths()[1],"/blup")
   }
   if(gsub("([0-9]|\\.)","",version$os)=="linux-gnu"){
     S_OP <- "Linux"
